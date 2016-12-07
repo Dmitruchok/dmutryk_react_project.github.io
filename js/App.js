@@ -20,7 +20,8 @@ var App = React.createClass({
   render: function () {
     return (
       <div className = 'app'>
-      News))
+      <h3>News))</h3>
+      <Add />
       <News data={my_news} />
       </div>
     );
@@ -30,6 +31,12 @@ var App = React.createClass({
 var News = React.createClass ({
   propTypes: {
     data: React.PropTypes.array.isRequired
+  },
+
+  getInitialState: function() {
+    return {
+      counter: 0
+    }
   },
 
   render: function () {
@@ -82,6 +89,8 @@ var Article = React.createClass ({
         text = this.props.data.text,
         bigText = this.props.data.bigText,
         visible = this.state.visible;
+
+
     return (
       <div className="article">
         <p className="news_author">{author}:</p>
@@ -92,7 +101,62 @@ var Article = React.createClass ({
 
     )
   }
-})
+});
+
+var Add = React.createClass({
+
+  getInitialState: function() { //устанавливаем начальное состояние (state)
+  return {
+    btnIsDisabled: true
+  };
+},
+
+  componentDidMount: function () {
+    ReactDOM.findDOMNode(this.refs.author).focus();
+  },
+
+  onChangeHandler: function (e) {
+    e.preventDefault();
+    var author = ReactDOM.findDOMNode(this.refs.author).value;
+    var text = ReactDOM.findDOMNode(this.refs.text).value;
+    alert(author + '\n' + text);
+  },
+
+  onCheckRuleClick: function (e) {
+    this.setState({btnIsDisabled: !this.state.btnIsDisabled});
+  },
+
+  render: function () {
+    return (
+      <form className="add new">
+        <input tepe="text"
+        className="add_author"
+        defaultValue=''
+        placeholder="Your name"
+        ref='author'
+         />
+
+         <textarea className="add_text"
+         defaultValue=''
+         placeholder='Text news'
+         ref='text'>
+         </textarea>
+
+         <label className="add_checkrule">
+          <input type="checkbox" defaultChecked={false} ref="chekrule" onChange={this.onCheckRuleClick} /> I agree with rules
+         </label>
+         <button
+         className="add_btn"
+         onClick={this.onChangeHandler}
+         ref="alert_button"
+         disabled={this.state.btnIsDisabled}
+         >Send</button>
+        </form>
+    );
+  }
+});
+
+
 
 
 ReactDOM.render(
