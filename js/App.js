@@ -16,55 +16,9 @@ var my_news = [
   }
 ];
 
-var App = React.createClass({
-  render: function () {
-    return (
-      <div className = 'app'>
-      <h3>News))</h3>
-      <Add />
-      <News data={my_news} />
-      </div>
-    );
-  }
-});
+window.ee = new EventEmitter();
 
-var News = React.createClass ({
-  propTypes: {
-    data: React.PropTypes.array.isRequired
-  },
-
-  getInitialState: function() {
-    return {
-      counter: 0
-    }
-  },
-
-  render: function () {
-    var data = this.props.data;
-    var newsTemplate;
-
-    if (data.length > 0) {
-      newsTemplate = data.map(function (item, index) {
-        return (
-          <div key={index}>
-            <Article data={item} />
-          </div>
-        )
-      });
-    } else {
-      newsTemplate = <p>Sorry news are absent!</p>
-    }
-
-    return (
-      <div className = 'news'>
-        {newsTemplate}
-        <strong className={'news__count ' + (data.length > 0 ? '':'none')}> All news: {data.length}</strong>
-      </div>
-    );
-  }
-});
-
-var Article = React.createClass ({
+var Article = React.createClass({
   propTypes: {
     data: React.PropTypes.shape({
       author: React.PropTypes.string.isRequired,
@@ -72,122 +26,173 @@ var Article = React.createClass ({
       bigText: React.PropTypes.string.isRequired
     })
   },
-
-  getInitialState: function () {
+  getInitialState: function() {
     return {
       visible: false
     };
   },
-
-  readMoreClick: function (e) {
+  readmoreClick: function(e) {
     e.preventDefault();
     this.setState({visible: true});
   },
-
-  render: function () {
+  render: function() {
     var author = this.props.data.author,
         text = this.props.data.text,
         bigText = this.props.data.bigText,
         visible = this.state.visible;
 
-
     return (
-      <div className="article">
-        <p className="news_author">{author}:</p>
-        <p className="news_text">{text}</p>
-        <a href="#" onClick={this.readMoreClick} className={"news_readmore " + (visible ? 'none': '' )}>More</a>
-        <p className={"news_bigText " + (visible ? '': 'none')}>{bigText}</p>
+      <div className='article'>
+        <p className='news__author'>{author}:</p>
+        <p className='news__text'>{text}</p>
+        <a href="#"
+          onClick={this.readmoreClick}
+          className={'news__readmore ' + (visible ? 'none': '')}>
+          Подробнее
+        </a>
+        <p className={'news__big-text ' + (visible ? '': 'none')}>{bigText}</p>
       </div>
-
     )
   }
 });
 
-var Add = React.createClass({
+var News = React.createClass({
+  propTypes: {
+    data: React.PropTypes.array.isRequired
+  },
+  getInitialState: function() {
+    return {
+      counter: 0
+    }
+  },
+  render: function() {
+    var data = this.props.data;
+    var newsTemplate;
 
-  getInitialState: function () {
+    if (data.length > 0) {
+      newsTemplate = data.map(function(item, index) {
+        return (
+          <div key={index}>
+            <Article data={item} />
+          </div>
+        )
+      })
+    } else {
+      newsTemplate = <p>К сожалению новостей нет</p>
+    }
+
+    return (
+      <div className='news'>
+        {newsTemplate}
+        <strong
+          className={'news__count ' + (data.length > 0 ? '':'none') }>Всего новостей: {data.length}</strong>
+      </div>
+    );
+  }
+});
+
+var Add = React.createClass({
+  getInitialState: function() {
     return {
       agreeNotChecked: true,
       authorIsEmpty: true,
       textIsEmpty: true
     };
   },
-
-  componentDidMount: function () {
+  componentDidMount: function() {
     ReactDOM.findDOMNode(this.refs.author).focus();
   },
-
-  onChangeHandler: function (e) {
+  onBtnClickHandler: function(e) {
     e.preventDefault();
-    var author = ReactDOM.findDOMNode(this.refs.author).value;
-    var text = ReactDOM.findDOMNode(this.refs.text).value;
-    alert(author + '\n' + text);
-  },
+    var textEl = ReactDOM.findDOMNode(this.refs.text);
 
-  onCheckRuleClick: function (e) {
+    var author = ReactDOM.findDOMNode(this.refs.author).value;
+    var text = textEl.value;
+
+    var item = [{
+      author: author,
+      text: text,
+      bigText: '...'
+    }];
+
+    window.ee.emit('News.add', item);
+
+    textEl.value = '';
+    this.setState({textIsEmpty: true});
+  },
+  onCheckRuleClick: function(e) {
     this.setState({agreeNotChecked: !this.state.agreeNotChecked});
   },
-
-  onAuthorChange: function (e) {
+  onFieldChange: function(fieldName, e) {
     if (e.target.value.trim().length > 0) {
-      this.setState({authorIsEmpty: false})
+      this.setState({[''+fieldName]:false})
     } else {
-      this.setState({authorIsEmpty: true})
+      this.setState({[''+fieldName]:true})
     }
   },
-
-  onTextChange: function (e) {
-    if (e.target.value.trim().length > 0) {
-      this.setState({textIsEmpty: false})
-    } else {
-      this.setState({textIsEmpty: true})
-    }
-  },
-
-  onFiledChange: function (fildName, e) {
-    if (e.target.value.trim().length > 0) {
-      this.setState({[''+fildName]: false})
-    } else {
-      this.setState({[''+fildName]: true})
-    }
-  },
-
-  render: function () {
+  render: function() {
     var agreeNotChecked = this.state.agreeNotChecked,
-          authorIsEmpty = this.state.authorIsEmpty,
-          textIsEmpty = this.state.textIsEmpty;
-
+        authorIsEmpty = this.state.authorIsEmpty,
+        textIsEmpty = this.state.textIsEmpty;
     return (
-      <form className="add new">
-        <input tepe="text"
-        className="add_author"
-        onChange={this.onFiledChange.bind(this, 'authorIsEmpty')}
-        placeholder="Your name"
-        ref='author'
-         />
+      <form className='add cf'>
+        <input
+          type='text'
+          className='add__author'
+          onChange={this.onFieldChange.bind(this, 'authorIsEmpty')}
+          placeholder='Ваше имя'
+          ref='author'
+        />
+        <textarea
+          className='add__text'
+          onChange={this.onFieldChange.bind(this, 'textIsEmpty')}
+          placeholder='Текст новости'
+          ref='text'
+        ></textarea>
+        <label className='add__checkrule'>
+          <input type='checkbox' ref='checkrule' onChange={this.onCheckRuleClick}/>Я согласен с правилами
+        </label>
 
-         <textarea className="add_text"
-        onChange={this.onFiledChange.bind(this, 'textIsEmpty')}
-         placeholder='Text news'
-         ref='text'>
-         </textarea>
-
-         <label className="add_checkrule">
-          <input type="checkbox" defaultChecked={false} ref="chekrule" onChange={this.onCheckRuleClick} /> I agree with rules
-         </label>
-         <button
-         className="add_btn"
-         onClick={this.onChangeHandler}
-         ref="alert_button"
-         disabled={agreeNotChecked || authorIsEmpty || textIsEmpty}
-         >Send</button>
-        </form>
+        <button
+          className='add__btn'
+          onClick={this.onBtnClickHandler}
+          ref='alert_button'
+          disabled={agreeNotChecked || authorIsEmpty || textIsEmpty}
+          >
+          Опубликовать новость
+        </button>
+      </form>
     );
   }
 });
 
-
-
+var App = React.createClass({
+  getInitialState: function() {
+    return {
+      news: my_news
+    };
+  },
+  componentDidMount: function() {
+    var self = this;
+    window.ee.addListener('News.add', function(item) {
+      var nextNews = item.concat(self.state.news);
+      self.setState({news: nextNews});
+    });
+  },
+  componentWillUnmount: function() {
+    window.ee.removeListener('News.add');
+  },
+  render: function() {
+    console.log('render');
+    return (
+      <div className='app'>
+        <Add />
+        <h3>Новости</h3>
+        <News data={this.state.news} />
+      </div>
+    );
+  }
+});
 
 ReactDOM.render(
   <App />,
