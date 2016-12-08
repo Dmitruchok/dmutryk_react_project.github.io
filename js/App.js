@@ -105,11 +105,13 @@ var Article = React.createClass ({
 
 var Add = React.createClass({
 
-  getInitialState: function() { //устанавливаем начальное состояние (state)
-  return {
-    btnIsDisabled: true
-  };
-},
+  getInitialState: function () {
+    return {
+      agreeNotChecked: true,
+      authorIsEmpty: true,
+      textIsEmpty: true
+    };
+  },
 
   componentDidMount: function () {
     ReactDOM.findDOMNode(this.refs.author).focus();
@@ -123,21 +125,49 @@ var Add = React.createClass({
   },
 
   onCheckRuleClick: function (e) {
-    this.setState({btnIsDisabled: !this.state.btnIsDisabled});
+    this.setState({agreeNotChecked: !this.state.agreeNotChecked});
+  },
+
+  onAuthorChange: function (e) {
+    if (e.target.value.trim().length > 0) {
+      this.setState({authorIsEmpty: false})
+    } else {
+      this.setState({authorIsEmpty: true})
+    }
+  },
+
+  onTextChange: function (e) {
+    if (e.target.value.trim().length > 0) {
+      this.setState({textIsEmpty: false})
+    } else {
+      this.setState({textIsEmpty: true})
+    }
+  },
+
+  onFiledChange: function (fildName, e) {
+    if (e.target.value.trim().length > 0) {
+      this.setState({[''+fildName]: false})
+    } else {
+      this.setState({[''+fildName]: true})
+    }
   },
 
   render: function () {
+    var agreeNotChecked = this.state.agreeNotChecked,
+          authorIsEmpty = this.state.authorIsEmpty,
+          textIsEmpty = this.state.textIsEmpty;
+
     return (
       <form className="add new">
         <input tepe="text"
         className="add_author"
-        defaultValue=''
+        onChange={this.onFiledChange.bind(this, 'authorIsEmpty')}
         placeholder="Your name"
         ref='author'
          />
 
          <textarea className="add_text"
-         defaultValue=''
+        onChange={this.onFiledChange.bind(this, 'textIsEmpty')}
          placeholder='Text news'
          ref='text'>
          </textarea>
@@ -149,7 +179,7 @@ var Add = React.createClass({
          className="add_btn"
          onClick={this.onChangeHandler}
          ref="alert_button"
-         disabled={this.state.btnIsDisabled}
+         disabled={agreeNotChecked || authorIsEmpty || textIsEmpty}
          >Send</button>
         </form>
     );
