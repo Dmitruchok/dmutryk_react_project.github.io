@@ -1,3 +1,5 @@
+
+
 var my_news = [
   {
     author: 'Andriy',
